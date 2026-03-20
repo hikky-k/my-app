@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1日タイムライン記録アプリ</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", sans-serif;
+      background: #ffffff;
+      color: #333;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 560px;
+      padding: 3rem 1.5rem;
+    }
+
+    h1 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #333;
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    /* ===== Start Screen ===== */
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    .start-screen {
+      text-align: center;
+      padding-top: 6rem;
+    }
+
+    .start-screen p {
+      color: #888;
+      margin-bottom: 2rem;
+      font-size: 0.95rem;
+    }
+
+    /* ===== Buttons ===== */
+    .btn {
+      padding: 0.75rem 2rem;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .btn:hover { opacity: 0.85; }
+
+    .btn-primary {
+      background: #333;
+      color: #fff;
+    }
+
+    .btn-danger {
+      background: #888;
+      color: #fff;
+    }
+
+    .btn-copy {
+      background: #333;
+      color: #fff;
+    }
+
+    .btn-reset {
+      background: #ccc;
+      color: #333;
+    }
+
+    .btn-sm {
+      padding: 0.3rem 0.6rem;
+      font-size: 0.75rem;
+      border: 1px solid #ddd;
+      background: #fff;
+      color: #999;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: color 0.2s, border-color 0.2s;
+    }
+
+    .btn-sm:hover {
+      color: #e33;
+      border-color: #e33;
+    }
+
+    /* ===== Recording Screen ===== */
+    .start-info {
+      text-align: center;
+      color: #888;
+      font-size: 0.85rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .start-info span {
+      font-weight: 700;
+      color: #333;
+      font-size: 1rem;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .input-row input {
+      flex: 1;
+      padding: 0.65rem 0.8rem;
+      border: 2px solid #e5e7eb;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .input-row input:focus {
+      border-color: #333;
+    }
+
+    .record-list {
+      margin-bottom: 2rem;
+      min-height: 60px;
+    }
+
+    .record-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.6rem 0;
+      border-bottom: 1px solid #f0f0f0;
+      font-size: 0.9rem;
+    }
+
+    .record-item:last-child {
+      border-bottom: none;
+    }
+
+    .record-text {
+      color: #333;
+      font-family: "SF Mono", "Menlo", monospace;
+    }
+
+    .end-area {
+      text-align: center;
+      padding-top: 1rem;
+      border-top: 1px solid #eee;
+    }
+
+    /* ===== Summary Screen ===== */
+    .summary-list {
+      background: #fafafa;
+      border-radius: 8px;
+      padding: 1.2rem 1rem;
+      margin-bottom: 1.5rem;
+      font-family: "SF Mono", "Menlo", monospace;
+      font-size: 0.88rem;
+      line-height: 1.8;
+      color: #333;
+    }
+
+    .summary-actions {
+      display: flex;
+      gap: 0.8rem;
+      justify-content: center;
+    }
+
+    .empty-msg {
+      color: #bbb;
+      text-align: center;
+      padding: 2rem 0;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <h1>1日タイムライン記録</h1>
+
+    <!-- S-01: Start Screen -->
+    <div id="startScreen" class="screen active">
+      <div class="start-screen">
+        <p>ボタンを押して記録を開始します</p>
+        <button class="btn btn-primary" id="startBtn">スタート</button>
+      </div>
+    </div>
+
+    <!-- S-02: Recording Screen -->
+    <div id="recordScreen" class="screen">
+      <div class="start-info">
+        開始時刻：<span id="startTime"></span>
+      </div>
+
+      <div class="input-row">
+        <input type="text" id="actionInput" placeholder="行動を入力（例：会議）">
+        <button class="btn btn-primary" id="addBtn">登録</button>
+      </div>
+
+      <div class="record-list" id="recordList">
+        <div class="empty-msg">まだ記録がありません</div>
+      </div>
+
+      <div class="end-area">
+        <button class="btn btn-danger" id="endBtn">終了</button>
+      </div>
+    </div>
+
+    <!-- S-03: Summary Screen -->
+    <div id="summaryScreen" class="screen">
+      <div class="summary-list" id="summaryList"></div>
+
+      <div class="summary-actions">
+        <button class="btn btn-copy" id="copyBtn">コピー</button>
+        <button class="btn btn-reset" id="resetBtn">リセット</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- State ---
+    let startTimeStr = '';
+    let records = [];
+
+    // --- Elements ---
+    const startScreen = document.getElementById('startScreen');
+    const recordScreen = document.getElementById('recordScreen');
+    const summaryScreen = document.getElementById('summaryScreen');
+    const startTimeEl = document.getElementById('startTime');
+    const actionInput = document.getElementById('actionInput');
+    const recordList = document.getElementById('recordList');
+    const summaryList = document.getElementById('summaryList');
+
+    // --- Helpers ---
+    function formatTime(date) {
+      const h = String(date.getHours()).padStart(2, '0');
+      const m = String(date.getMinutes()).padStart(2, '0');
+      return `${h}:${m}`;
+    }
+
+    function showScreen(screen) {
+      [startScreen, recordScreen, summaryScreen].forEach(s => s.classList.remove('active'));
+      screen.classList.add('active');
+    }
+
+    function renderRecords() {
+      if (records.length === 0) {
+        recordList.innerHTML = '<div class="empty-msg">まだ記録がありません</div>';
+        return;
+      }
+      recordList.innerHTML = records.map((r, i) => `
+        <div class="record-item">
+          <span class="record-text">〜${r.time}　${r.action}</span>
+          <button class="btn-sm" onclick="deleteRecord(${i})">削除</button>
+        </div>
+      `).join('');
+    }
+
+    // --- F-01: Start ---
+    document.getElementById('startBtn').addEventListener('click', () => {
+      startTimeStr = formatTime(new Date());
+      startTimeEl.textContent = startTimeStr;
+      records = [];
+      showScreen(recordScreen);
+      actionInput.focus();
+    });
+
+    // --- F-02 & F-03: Input & Register ---
+    function addRecord() {
+      const action = actionInput.value.trim();
+      if (!action) return;
+
+      records.push({
+        time: formatTime(new Date()),
+        action: action
+      });
+
+      actionInput.value = '';
+      renderRecords();
+      actionInput.focus();
+    }
+
+    document.getElementById('addBtn').addEventListener('click', addRecord);
+
+    actionInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') addRecord();
+    });
+
+    // --- F-05: Delete ---
+    window.deleteRecord = function(index) {
+      records.splice(index, 1);
+      renderRecords();
+    };
+
+    // --- F-06: End & Show Summary ---
+    document.getElementById('endBtn').addEventListener('click', () => {
+      if (records.length === 0) {
+        if (!confirm('記録がありません。終了しますか？')) return;
+      }
+
+      const lines = records.map(r => `〜${r.time}　${r.action}`);
+      summaryList.textContent = lines.join('\n');
+      showScreen(summaryScreen);
+    });
+
+    // --- F-07: Copy ---
+    document.getElementById('copyBtn').addEventListener('click', () => {
+      const text = records.map(r => `〜${r.time} ${r.action}`).join('\n');
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = document.getElementById('copyBtn');
+        btn.textContent = 'コピー完了！';
+        setTimeout(() => { btn.textContent = 'コピー'; }, 1500);
+      });
+    });
+
+    // --- F-08: Reset ---
+    document.getElementById('resetBtn').addEventListener('click', () => {
+      if (!confirm('リセットしてスタート画面に戻りますか？')) return;
+      records = [];
+      startTimeStr = '';
+      actionInput.value = '';
+      renderRecords();
+      showScreen(startScreen);
+    });
+  </script>
+</body>
+</html>

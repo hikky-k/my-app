@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>コンサルファーム比較ナビ</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Segoe UI", Roboto, sans-serif;
+      color: #333;
+      line-height: 1.6;
+    }
+
+    /* ===== Header ===== */
+    header {
+      background: #fff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      position: fixed;
+      top: 0;
+      width: 100%;
+      z-index: 100;
+    }
+
+    .header-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0.8rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: #5f1a1a;
+    }
+
+    .logo span {
+      color: #dc2626;
+    }
+
+    nav a {
+      text-decoration: none;
+      color: #555;
+      margin-left: 1.5rem;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    nav a:hover {
+      color: #dc2626;
+    }
+
+    /* ===== Hero ===== */
+    .hero {
+      position: relative;
+      height: 520px;
+      margin-top: 56px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #5f1a1a;
+    }
+
+    .hero-img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0.35;
+    }
+
+    .hero-content {
+      position: relative;
+      text-align: center;
+      color: #fff;
+      padding: 1.5rem;
+    }
+
+    .hero-content h1 {
+      font-size: 2.6rem;
+      font-weight: 800;
+      margin-bottom: 1rem;
+      letter-spacing: 0.02em;
+    }
+
+    .hero-content p {
+      font-size: 1.15rem;
+      opacity: 0.9;
+      margin-bottom: 2rem;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .hero-btn {
+      display: inline-block;
+      padding: 0.85rem 2.5rem;
+      background: #dc2626;
+      color: #fff;
+      text-decoration: none;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 1rem;
+      transition: background 0.2s, transform 0.2s;
+    }
+
+    .hero-btn:hover {
+      background: #b91c1c;
+      transform: translateY(-2px);
+    }
+
+    /* ===== Section Common ===== */
+    section {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 4rem 1.5rem;
+    }
+
+    .section-title {
+      text-align: center;
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: #5f1a1a;
+      margin-bottom: 0.5rem;
+    }
+
+    .section-sub {
+      text-align: center;
+      color: #777;
+      margin-bottom: 3rem;
+      font-size: 0.95rem;
+    }
+
+    /* ===== Cards ===== */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+      padding: 2rem;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    }
+
+    .card-type {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      margin-bottom: 0.8rem;
+    }
+
+    .type-strategy { background: #fee2e2; color: #dc2626; }
+    .type-total { background: #fce7f3; color: #be185d; }
+    .type-it { background: #fff1f2; color: #e11d48; }
+    .type-big4 { background: #fde8e8; color: #991b1b; }
+
+    .card h3 {
+      font-size: 1.2rem;
+      color: #5f1a1a;
+      margin-bottom: 0.5rem;
+    }
+
+    .card p {
+      font-size: 0.9rem;
+      color: #666;
+      margin-bottom: 1rem;
+    }
+
+    .card-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .tag {
+      font-size: 0.75rem;
+      background: #f1f5f9;
+      color: #475569;
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+    }
+
+    /* ===== Comparison Table ===== */
+    .table-wrap {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+
+    thead {
+      background: #5f1a1a;
+      color: #fff;
+    }
+
+    th, td {
+      padding: 0.85rem 1rem;
+      text-align: left;
+    }
+
+    th {
+      font-weight: 600;
+    }
+
+    tbody tr {
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    tbody tr:hover {
+      background: #fef2f2;
+    }
+
+    .rating {
+      color: #f59e0b;
+      letter-spacing: 2px;
+    }
+
+    /* ===== Features ===== */
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 2rem;
+      text-align: center;
+    }
+
+    .feature-icon {
+      font-size: 2.5rem;
+      margin-bottom: 0.8rem;
+    }
+
+    .feature h3 {
+      font-size: 1.05rem;
+      color: #5f1a1a;
+      margin-bottom: 0.4rem;
+    }
+
+    .feature p {
+      font-size: 0.85rem;
+      color: #777;
+    }
+
+    /* ===== Footer ===== */
+    footer {
+      background: #1a2b5f;
+      color: #94a3b8;
+      text-align: center;
+      padding: 2rem 1.5rem;
+      font-size: 0.85rem;
+    }
+
+    footer a {
+      color: #fca5a5;
+      text-decoration: none;
+    }
+
+    /* ===== Responsive ===== */
+    @media (max-width: 640px) {
+      .hero-content h1 { font-size: 1.8rem; }
+      .hero { height: 400px; }
+      .section-title { font-size: 1.4rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="header-inner">
+      <div class="logo">コンサル<span>比較ナビ</span></div>
+      <nav>
+        <a href="#firms">ファーム一覧</a>
+        <a href="#compare">比較表</a>
+        <a href="#about">このサイトについて</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <div class="hero">
+    <img
+      class="hero-img"
+      src="https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=1400&q=80"
+      alt="ビジネスチームのミーティング風景"
+    />
+    <div class="hero-content">
+      <h1>あなたに合うコンサルファームが見つかる</h1>
+      <p>戦略系・総合系・IT系・BIG4 — 主要コンサルティングファームの特徴・年収・カルチャーをまとめて比較できます。</p>
+      <a href="#firms" class="hero-btn">ファームを比較する</a>
+    </div>
+  </div>
+
+  <!-- Firm Cards -->
+  <section id="firms">
+    <h2 class="section-title">主要コンサルティングファーム</h2>
+    <p class="section-sub">各ファームの特徴を一目でチェック</p>
+
+    <div class="cards">
+      <div class="card">
+        <span class="card-type type-strategy">戦略系</span>
+        <h3>マッキンゼー・アンド・カンパニー</h3>
+        <p>世界最大級の戦略コンサルティングファーム。経営層向けの戦略立案に強みを持ち、Up or Outの文化で知られる。</p>
+        <div class="card-meta">
+          <span class="tag">戦略立案</span>
+          <span class="tag">グローバル</span>
+          <span class="tag">年収: 非常に高い</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="card-type type-strategy">戦略系</span>
+        <h3>ボストン コンサルティング グループ</h3>
+        <p>戦略コンサルのトップファーム。近年はデジタル・AI領域にも積極投資。社員の成長支援に定評がある。</p>
+        <div class="card-meta">
+          <span class="tag">戦略 + デジタル</span>
+          <span class="tag">人材育成</span>
+          <span class="tag">年収: 非常に高い</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="card-type type-strategy">戦略系</span>
+        <h3>ベイン・アンド・カンパニー</h3>
+        <p>「結果主義」を掲げ、クライアントとの長期的な関係構築を重視。PEファンド向けデューデリジェンスでも有名。</p>
+        <div class="card-meta">
+          <span class="tag">結果主義</span>
+          <span class="tag">PE / DD</span>
+          <span class="tag">年収: 非常に高い</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="card-type type-big4">BIG4</span>
+        <h3>デロイト トーマツ コンサルティング</h3>
+        <p>BIG4最大規模。監査法人母体の強みを活かし、戦略からIT実装まで幅広い領域をカバーする総合力が魅力。</p>
+        <div class="card-meta">
+          <span class="tag">総合力</span>
+          <span class="tag">規模最大</span>
+          <span class="tag">年収: 高い</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="card-type type-big4">BIG4</span>
+        <h3>PwCコンサルティング</h3>
+        <p>グローバルネットワークを活かしたクロスボーダー案件に強み。テクノロジーとストラテジーの融合を推進。</p>
+        <div class="card-meta">
+          <span class="tag">クロスボーダー</span>
+          <span class="tag">Tech + Strategy</span>
+          <span class="tag">年収: 高い</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="card-type type-total">総合系</span>
+        <h3>アクセンチュア</h3>
+        <p>世界最大のコンサルティング企業。戦略・業務・IT・デジタルまでEnd-to-Endで支援。テクノロジーに特に強い。</p>
+        <div class="card-meta">
+          <span class="tag">End-to-End</span>
+          <span class="tag">テクノロジー</span>
+          <span class="tag">年収: 高い</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="card-type type-it">IT系</span>
+        <h3>アビームコンサルティング</h3>
+        <p>日系コンサル大手。SAP導入で国内トップクラスの実績。アジア展開にも注力し、着実な成長を続ける。</p>
+        <div class="card-meta">
+          <span class="tag">SAP</span>
+          <span class="tag">日系</span>
+          <span class="tag">年収: 中〜高</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="card-type type-it">IT系</span>
+        <h3>ベイカレント・コンサルティング</h3>
+        <p>急成長中の日系ファーム。ワンプール制を採用し、戦略からIT実装まで幅広い経験を積める環境が特徴。</p>
+        <div class="card-meta">
+          <span class="tag">ワンプール制</span>
+          <span class="tag">急成長</span>
+          <span class="tag">年収: 高い</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="card-type type-strategy">戦略系</span>
+        <h3>A.T. カーニー</h3>
+        <p>少数精鋭の戦略ファーム。製造業・消費財に強みを持ち、実行支援まで踏み込むスタイルで差別化。</p>
+        <div class="card-meta">
+          <span class="tag">少数精鋭</span>
+          <span class="tag">製造業</span>
+          <span class="tag">年収: 非常に高い</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Comparison Table -->
+  <section id="compare" style="background: #f8fafc; max-width: none; padding: 4rem 1.5rem;">
+    <div style="max-width: 1100px; margin: 0 auto;">
+      <h2 class="section-title">ファーム比較表</h2>
+      <p class="section-sub">年収・カルチャー・強みを一覧で比較</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>ファーム名</th>
+              <th>分類</th>
+              <th>年収水準</th>
+              <th>ワークライフバランス</th>
+              <th>成長環境</th>
+              <th>強み</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>マッキンゼー</strong></td>
+              <td>戦略系</td>
+              <td>1,200〜3,000万+</td>
+              <td><span class="rating">&#9733;&#9733;</span></td>
+              <td><span class="rating">&#9733;&#9733;&#9733;&#9733;&#9733;</span></td>
+              <td>戦略立案、CEO アジェンダ</td>
+            </tr>
+            <tr>
+              <td><strong>BCG</strong></td>
+              <td>戦略系</td>
+              <td>1,200〜3,000万+</td>
+              <td><span class="rating">&#9733;&#9733;&#9733;</span></td>
+              <td><span class="rating">&#9733;&#9733;&#9733;&#9733;&#9733;</span></td>
+              <td>戦略 + デジタル変革</td>
+            </tr>
+            <tr>
+              <td><strong>ベイン</strong></td>
+              <td>戦略系</td>
+              <td>1,200〜2,800万+</td>
+              <td><span class="rating">&#9733;&#9733;&#9733;</span></td>
+              <td><span class="rating">&#9733;&#9733;&#9733;&#9733;&#9733;</span></td>
+              <td>PE / DD、結果主義</td>
+            </tr>
+            <tr>
+              <td><strong>デロイト</strong></td>
+              <td>BIG4</td>
+              <td>800〜2,500万</td>
+              <td><span class="rating">&#9733;&#9733;&#9733;</span></td>
+              <td><span class="rating">&#9733;&#9733;&#9733;&#9733;</span></td>
+              <td>総合力、監査連携</td>
+            </tr>
+            <tr>
+              <td><strong>PwC</strong></td>
+              <td>BIG4</td>
+              <td>800〜2,500万</td>
+              <td><span class="rating">&#9733;&#9733;&#9733;</span></td>
+              <td><span class="rating">&#9733;&#9733;&#9733;&#9733;</span></td>
+              <td>グローバル、クロスボーダー</td>
+            </tr>
+            <tr>
+              <td><strong>アクセンチュア</strong></td>
+              <td>総合系</td>
+              <td>800〜2,500万</td>
+              <td><span class="rating">&#9733;&#9733;&#9733;</span></td>
+              <td><span class="rating">&#9733;&#9733;&#9733;&#9733;</span></td>
+              <td>テクノロジー、End-to-End</td>
+            </tr>
+            <tr>
+              <td><strong>アビーム</strong></td>
+              <td>IT系</td>
+              <td>600〜1,500万</td>
+              <td><span class="rating">&#9733;&#9733;&#9733;&#9733;</span></td>
+              <td><span class="rating">&#9733;&#9733;&#9733;</span></td>
+              <td>SAP、アジア展開</td>
+            </tr>
+            <tr>
+              <td><strong>ベイカレント</strong></td>
+              <td>IT系</td>
+              <td>700〜2,000万</td>
+              <td><span class="rating">&#9733;&#9733;&#9733;</span></td>
+              <td><span class="rating">&#9733;&#9733;&#9733;&#9733;</span></td>
+              <td>ワンプール、幅広い経験</td>
+            </tr>
+            <tr>
+              <td><strong>A.T. カーニー</strong></td>
+              <td>戦略系</td>
+              <td>1,000〜2,500万+</td>
+              <td><span class="rating">&#9733;&#9733;</span></td>
+              <td><span class="rating">&#9733;&#9733;&#9733;&#9733;&#9733;</span></td>
+              <td>製造業、実行支援</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- About / Features -->
+  <section id="about">
+    <h2 class="section-title">このサイトについて</h2>
+    <p class="section-sub">コンサル業界を目指す方のための情報共有プラットフォーム</p>
+
+    <div class="features">
+      <div class="feature">
+        <div class="feature-icon">&#128202;</div>
+        <h3>客観的な比較</h3>
+        <p>年収・カルチャー・強みを横並びで比較。自分に合うファームが見つかります。</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">&#128172;</div>
+        <h3>リアルな声</h3>
+        <p>現役・OBコンサルタントの体験談をもとにした情報を掲載しています。</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">&#128640;</div>
+        <h3>キャリア支援</h3>
+        <p>転職・就活に役立つ選考対策やケース面接のポイントも紹介予定です。</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">&#128203;</div>
+        <h3>定期更新</h3>
+        <p>業界動向にあわせて情報を随時アップデートしていきます。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <p>&copy; 2026 コンサル比較ナビ. All rights reserved.</p>
+  </footer>
+
+</body>
+</html>

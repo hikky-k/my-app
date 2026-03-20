@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>メモアプリ</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", sans-serif;
+      background: #fef2f2;
+      color: #333;
+      min-height: 100vh;
+    }
+
+    .app {
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+    }
+
+    h1 {
+      text-align: center;
+      color: #5f1a1a;
+      margin-bottom: 1.5rem;
+      font-size: 1.8rem;
+    }
+
+    .input-area {
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+      margin-bottom: 2rem;
+    }
+
+    .input-area input {
+      padding: 0.7rem 1rem;
+      border: 2px solid #e5e7eb;
+      border-radius: 8px;
+      font-size: 1rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .input-area input:focus {
+      border-color: #dc2626;
+    }
+
+    .input-area textarea {
+      padding: 0.7rem 1rem;
+      border: 2px solid #e5e7eb;
+      border-radius: 8px;
+      font-size: 1rem;
+      outline: none;
+      resize: vertical;
+      min-height: 100px;
+      transition: border-color 0.2s;
+    }
+
+    .input-area textarea:focus {
+      border-color: #dc2626;
+    }
+
+    .btn {
+      padding: 0.7rem 1.5rem;
+      background: #dc2626;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn:hover { background: #b91c1c; }
+
+    .memo-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .memo-item {
+      background: #fff;
+      border-radius: 10px;
+      padding: 1.2rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      position: relative;
+      transition: transform 0.15s;
+    }
+
+    .memo-item:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    }
+
+    .memo-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #5f1a1a;
+      margin-bottom: 0.4rem;
+    }
+
+    .memo-body {
+      font-size: 0.9rem;
+      color: #555;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .memo-date {
+      font-size: 0.75rem;
+      color: #aaa;
+      margin-top: 0.6rem;
+    }
+
+    .memo-actions {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      display: flex;
+      gap: 0.4rem;
+    }
+
+    .btn-sm {
+      padding: 0.3rem 0.6rem;
+      font-size: 0.75rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .btn-edit { background: #fee2e2; color: #dc2626; }
+    .btn-edit:hover { background: #fecaca; }
+    .btn-delete { background: #f3f4f6; color: #666; }
+    .btn-delete:hover { background: #e5e7eb; }
+
+    .empty {
+      text-align: center;
+      color: #aaa;
+      padding: 3rem 0;
+      font-size: 0.95rem;
+    }
+
+    .search {
+      margin-bottom: 1.5rem;
+    }
+
+    .search input {
+      width: 100%;
+      padding: 0.6rem 1rem;
+      border: 2px solid #e5e7eb;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      outline: none;
+    }
+
+    .search input:focus { border-color: #dc2626; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <h1>Memo</h1>
+
+    <div class="input-area">
+      <input type="text" id="title" placeholder="タイトル">
+      <textarea id="body" placeholder="メモの内容を入力..."></textarea>
+      <button class="btn" id="saveBtn">保存する</button>
+    </div>
+
+    <div class="search">
+      <input type="text" id="search" placeholder="メモを検索...">
+    </div>
+
+    <div class="memo-list" id="memoList"></div>
+  </div>
+
+  <script>
+    const titleInput = document.getElementById('title');
+    const bodyInput = document.getElementById('body');
+    const saveBtn = document.getElementById('saveBtn');
+    const searchInput = document.getElementById('search');
+    const memoList = document.getElementById('memoList');
+
+    let memos = JSON.parse(localStorage.getItem('memos') || '[]');
+    let editingId = null;
+
+    function save() {
+      localStorage.setItem('memos', JSON.stringify(memos));
+    }
+
+    function render() {
+      const query = searchInput.value.toLowerCase();
+      const filtered = memos.filter(m =>
+        m.title.toLowerCase().includes(query) ||
+        m.body.toLowerCase().includes(query)
+      );
+
+      if (filtered.length === 0) {
+        memoList.innerHTML = '<div class="empty">メモがありません</div>';
+        return;
+      }
+
+      memoList.innerHTML = filtered.map(m => `
+        <div class="memo-item">
+          <div class="memo-actions">
+            <button class="btn-sm btn-edit" onclick="editMemo('${m.id}')">編集</button>
+            <button class="btn-sm btn-delete" onclick="deleteMemo('${m.id}')">削除</button>
+          </div>
+          <div class="memo-title">${escapeHtml(m.title || '無題')}</div>
+          <div class="memo-body">${escapeHtml(m.body)}</div>
+          <div class="memo-date">${m.date}</div>
+        </div>
+      `).join('');
+    }
+
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    saveBtn.addEventListener('click', () => {
+      const title = titleInput.value.trim();
+      const body = bodyInput.value.trim();
+      if (!body && !title) return;
+
+      if (editingId) {
+        const memo = memos.find(m => m.id === editingId);
+        if (memo) {
+          memo.title = title;
+          memo.body = body;
+          memo.date = new Date().toLocaleString('ja-JP');
+        }
+        editingId = null;
+        saveBtn.textContent = '保存する';
+      } else {
+        memos.unshift({
+          id: Date.now().toString(),
+          title,
+          body,
+          date: new Date().toLocaleString('ja-JP')
+        });
+      }
+
+      save();
+      render();
+      titleInput.value = '';
+      bodyInput.value = '';
+      titleInput.focus();
+    });
+
+    window.editMemo = function(id) {
+      const memo = memos.find(m => m.id === id);
+      if (!memo) return;
+      titleInput.value = memo.title;
+      bodyInput.value = memo.body;
+      editingId = id;
+      saveBtn.textContent = '更新する';
+      titleInput.focus();
+    };
+
+    window.deleteMemo = function(id) {
+      if (!confirm('このメモを削除しますか？')) return;
+      memos = memos.filter(m => m.id !== id);
+      if (editingId === id) {
+        editingId = null;
+        saveBtn.textContent = '保存する';
+        titleInput.value = '';
+        bodyInput.value = '';
+      }
+      save();
+      render();
+    };
+
+    searchInput.addEventListener('input', render);
+
+    render();
+  </script>
+</body>
+</html>

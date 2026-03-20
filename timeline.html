@@ -94,6 +94,37 @@
       border-color: #e33;
     }
 
+    .btn-sm.btn-edit:hover {
+      color: #333;
+      border-color: #333;
+    }
+
+    .edit-row {
+      display: flex;
+      gap: 0.4rem;
+      align-items: center;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .edit-row input[type="time"] {
+      padding: 0.3rem 0.4rem;
+      border: 2px solid #333;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      font-family: "SF Mono", "Menlo", monospace;
+      outline: none;
+    }
+
+    .edit-row input[type="text"] {
+      flex: 1;
+      padding: 0.3rem 0.5rem;
+      border: 2px solid #333;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      outline: none;
+    }
+
     /* ===== Recording Screen ===== */
     .start-info {
       text-align: center;
@@ -257,12 +288,25 @@
         recordList.innerHTML = '<div class="empty-msg">まだ記録がありません</div>';
         return;
       }
-      recordList.innerHTML = records.map((r, i) => `
-        <div class="record-item">
-          <span class="record-text">〜${r.time}　${r.action}</span>
-          <button class="btn-sm" onclick="deleteRecord(${i})">削除</button>
-        </div>
-      `).join('');
+      recordList.innerHTML = records.map((r, i) => {
+        if (r.editing) {
+          return `
+            <div class="edit-row">
+              <input type="time" id="editTime${i}" value="${r.time}">
+              <input type="text" id="editAction${i}" value="${escapeHtml(r.action)}">
+              <button class="btn-sm btn-edit" onclick="saveEdit(${i})">保存</button>
+              <button class="btn-sm" onclick="cancelEdit(${i})">取消</button>
+            </div>`;
+        }
+        return `
+          <div class="record-item">
+            <span class="record-text">〜${r.time}　${escapeHtml(r.action)}</span>
+            <span>
+              <button class="btn-sm btn-edit" onclick="editRecord(${i})">編集</button>
+              <button class="btn-sm" onclick="deleteRecord(${i})">削除</button>
+            </span>
+          </div>`;
+      }).join('');
     }
 
     // --- F-01: Start ---
@@ -294,6 +338,34 @@
     actionInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') addRecord();
     });
+
+    // --- Helpers ---
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    // --- Edit ---
+    window.editRecord = function(index) {
+      records[index].editing = true;
+      renderRecords();
+    };
+
+    window.saveEdit = function(index) {
+      const timeVal = document.getElementById('editTime' + index).value;
+      const actionVal = document.getElementById('editAction' + index).value.trim();
+      if (!actionVal) return;
+      records[index].time = timeVal;
+      records[index].action = actionVal;
+      delete records[index].editing;
+      renderRecords();
+    };
+
+    window.cancelEdit = function(index) {
+      delete records[index].editing;
+      renderRecords();
+    };
 
     // --- F-05: Delete ---
     window.deleteRecord = function(index) {

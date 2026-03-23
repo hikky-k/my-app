@@ -258,6 +258,45 @@
   </div>
 
   <script>
+    // --- Storage ---
+    const STORAGE_KEY = 'timeline_data';
+
+    function todayStr() {
+      return new Date().toISOString().slice(0, 10);
+    }
+
+    function saveState() {
+      const data = {
+        date: todayStr(),
+        startTimeStr,
+        records: records.map(r => ({ time: r.time, action: r.action })),
+        screen: document.getElementById('recordScreen').classList.contains('active') ? 'record'
+              : document.getElementById('summaryScreen').classList.contains('active') ? 'summary'
+              : 'start'
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    }
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return null;
+        const data = JSON.parse(raw);
+        if (data.date !== todayStr()) {
+          localStorage.removeItem(STORAGE_KEY);
+          return null;
+        }
+        return data;
+      } catch {
+        localStorage.removeItem(STORAGE_KEY);
+        return null;
+      }
+    }
+
+    function clearState() {
+      localStorage.removeItem(STORAGE_KEY);
+    }
+
     // --- State ---
     let startTimeStr = '';
     let records = [];
@@ -315,6 +354,7 @@
       startTimeEl.textContent = startTimeStr;
       records = [];
       showScreen(recordScreen);
+      saveState();
       actionInput.focus();
     });
 
@@ -330,6 +370,7 @@
 
       actionInput.value = '';
       renderRecords();
+      saveState();
       actionInput.focus();
     }
 
@@ -360,6 +401,7 @@
       records[index].action = actionVal;
       delete records[index].editing;
       renderRecords();
+      saveState();
     };
 
     window.cancelEdit = function(index) {
@@ -371,6 +413,7 @@
     window.deleteRecord = function(index) {
       records.splice(index, 1);
       renderRecords();
+      saveState();
     };
 
     // --- F-06: End & Show Summary ---
@@ -382,6 +425,7 @@
       const lines = records.map(r => `〜${r.time}　${r.action}`);
       summaryList.textContent = lines.join('\n');
       showScreen(summaryScreen);
+      saveState();
     });
 
     // --- F-07: Copy ---
@@ -402,7 +446,27 @@
       actionInput.value = '';
       renderRecords();
       showScreen(startScreen);
+      clearState();
     });
+
+    // --- Restore from localStorage on load ---
+    (function restore() {
+      const saved = loadState();
+      if (!saved) return;
+
+      startTimeStr = saved.startTimeStr || '';
+      records = saved.records || [];
+
+      if (saved.screen === 'record') {
+        startTimeEl.textContent = startTimeStr;
+        renderRecords();
+        showScreen(recordScreen);
+      } else if (saved.screen === 'summary') {
+        const lines = records.map(r => `〜${r.time}　${r.action}`);
+        summaryList.textContent = lines.join('\n');
+        showScreen(summaryScreen);
+      }
+    })();
   </script>
 </body>
 </html>

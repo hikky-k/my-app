@@ -113,16 +113,59 @@
       border-bottom: 1px solid #eee;
       font-size: 0.95rem;
     }
-    .entry-list li .delete-btn {
+    .entry-list li .entry-actions {
+      display: flex;
+      gap: 0.3rem;
+      align-items: center;
+    }
+    .entry-list li .delete-btn,
+    .entry-list li .edit-btn {
       background: none;
       border: none;
       color: #999;
       cursor: pointer;
-      font-size: 1.1rem;
-      padding: 0 0.3rem;
+      font-size: 0.8rem;
+      padding: 0.2rem 0.4rem;
       line-height: 1;
+      border: 1px solid #ddd;
+      border-radius: 4px;
     }
-    .entry-list li .delete-btn:hover { color: #c00; }
+    .entry-list li .delete-btn:hover { color: #c00; border-color: #c00; }
+    .entry-list li .edit-btn:hover { color: #333; border-color: #333; }
+    .entry-list .edit-row {
+      display: flex;
+      gap: 0.4rem;
+      align-items: center;
+      width: 100%;
+      padding: 0.3rem 0;
+    }
+    .entry-list .edit-row input[type="time"] {
+      padding: 0.3rem 0.4rem;
+      border: 2px solid #333;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      font-family: "SF Mono", "Menlo", monospace;
+      outline: none;
+    }
+    .entry-list .edit-row input[type="text"] {
+      flex: 1;
+      padding: 0.3rem 0.5rem;
+      border: 2px solid #333;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      outline: none;
+    }
+    .entry-list .edit-row button {
+      padding: 0.3rem 0.6rem;
+      font-size: 0.75rem;
+      border: 1px solid #ddd;
+      background: #fff;
+      color: #999;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .entry-list .edit-row .save-btn:hover { color: #333; border-color: #333; }
+    .entry-list .edit-row .cancel-btn:hover { color: #c00; border-color: #c00; }
 
     .recording-footer {
       text-align: center;
@@ -460,19 +503,73 @@
       renderEntryList();
     }
 
+    function editEntry(idx) {
+      currentSession.entries[idx].editing = true;
+      renderEntryList();
+    }
+
+    function saveEditEntry(idx) {
+      var timeVal = document.getElementById('editTime' + idx).value;
+      var labelVal = document.getElementById('editLabel' + idx).value.trim();
+      if (!labelVal) return;
+      currentSession.entries[idx].time = timeVal;
+      currentSession.entries[idx].label = labelVal;
+      delete currentSession.entries[idx].editing;
+      renderEntryList();
+    }
+
+    function cancelEditEntry(idx) {
+      delete currentSession.entries[idx].editing;
+      renderEntryList();
+    }
+
     function renderEntryList() {
       var ul = document.getElementById('entry-list');
       ul.innerHTML = '';
       currentSession.entries.forEach(function(e, i) {
         var li = document.createElement('li');
-        var span = document.createElement('span');
-        span.textContent = '\u301C' + e.time + '\u3000' + e.label;
-        var btn = document.createElement('button');
-        btn.className = 'delete-btn';
-        btn.textContent = '\u00D7';
-        btn.onclick = function() { deleteEntry(i); };
-        li.appendChild(span);
-        li.appendChild(btn);
+        if (e.editing) {
+          var row = document.createElement('div');
+          row.className = 'edit-row';
+          var timeInput = document.createElement('input');
+          timeInput.type = 'time';
+          timeInput.value = e.time;
+          timeInput.id = 'editTime' + i;
+          var labelInput = document.createElement('input');
+          labelInput.type = 'text';
+          labelInput.value = e.label;
+          labelInput.id = 'editLabel' + i;
+          var saveBtn = document.createElement('button');
+          saveBtn.className = 'save-btn';
+          saveBtn.textContent = '保存';
+          saveBtn.onclick = function() { saveEditEntry(i); };
+          var cancelBtn = document.createElement('button');
+          cancelBtn.className = 'cancel-btn';
+          cancelBtn.textContent = '取消';
+          cancelBtn.onclick = function() { cancelEditEntry(i); };
+          row.appendChild(timeInput);
+          row.appendChild(labelInput);
+          row.appendChild(saveBtn);
+          row.appendChild(cancelBtn);
+          li.appendChild(row);
+        } else {
+          var span = document.createElement('span');
+          span.textContent = '\u301C' + e.time + '\u3000' + e.label;
+          var actions = document.createElement('span');
+          actions.className = 'entry-actions';
+          var editBtn = document.createElement('button');
+          editBtn.className = 'edit-btn';
+          editBtn.textContent = '編集';
+          editBtn.onclick = function() { editEntry(i); };
+          var delBtn = document.createElement('button');
+          delBtn.className = 'delete-btn';
+          delBtn.textContent = '\u00D7';
+          delBtn.onclick = function() { deleteEntry(i); };
+          actions.appendChild(editBtn);
+          actions.appendChild(delBtn);
+          li.appendChild(span);
+          li.appendChild(actions);
+        }
         ul.appendChild(li);
       });
     }

@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
   <title>1日タイムライン記録アプリ</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -198,6 +200,7 @@
       font-size: 0.88rem;
       line-height: 1.8;
       color: #333;
+      white-space: pre-wrap;
     }
 
     .summary-actions {
@@ -416,22 +419,24 @@
       saveState();
     };
 
-    // --- F-06: End & Show Summary ---
+    // --- F-06: End & Show Summary (timeline entries only) ---
+    function buildSummaryText() {
+      return records.map(r => `〜${r.time}　${r.action}`).join('\n');
+    }
+
     document.getElementById('endBtn').addEventListener('click', () => {
       if (records.length === 0) {
         if (!confirm('記録がありません。終了しますか？')) return;
       }
 
-      const lines = records.map(r => `〜${r.time}　${r.action}`);
-      summaryList.textContent = lines.join('\n');
+      summaryList.textContent = buildSummaryText();
       showScreen(summaryScreen);
       saveState();
     });
 
-    // --- F-07: Copy ---
+    // --- F-07: Copy (timeline entries only, no aggregation) ---
     document.getElementById('copyBtn').addEventListener('click', () => {
-      const text = records.map(r => `〜${r.time} ${r.action}`).join('\n');
-      navigator.clipboard.writeText(text).then(() => {
+      navigator.clipboard.writeText(buildSummaryText()).then(() => {
         const btn = document.getElementById('copyBtn');
         btn.textContent = 'コピー完了！';
         setTimeout(() => { btn.textContent = 'コピー'; }, 1500);
@@ -462,8 +467,7 @@
         renderRecords();
         showScreen(recordScreen);
       } else if (saved.screen === 'summary') {
-        const lines = records.map(r => `〜${r.time}　${r.action}`);
-        summaryList.textContent = lines.join('\n');
+        summaryList.textContent = buildSummaryText();
         showScreen(summaryScreen);
       }
     })();

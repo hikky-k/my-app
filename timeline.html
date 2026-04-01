@@ -455,9 +455,15 @@
     });
 
     // --- Restore from localStorage on load ---
-    (function restore() {
+    function restore() {
       const saved = loadState();
-      if (!saved) return;
+      if (!saved) {
+        // データが無い or 日付が変わった → スタート画面
+        records = [];
+        startTimeStr = '';
+        showScreen(startScreen);
+        return;
+      }
 
       startTimeStr = saved.startTimeStr || '';
       records = saved.records || [];
@@ -470,7 +476,48 @@
         summaryList.textContent = buildSummaryText();
         showScreen(summaryScreen);
       }
-    })();
+    }
+    restore();
+
+    // --- 23:59 自動リセット ---
+    function scheduleReset() {
+      const now = new Date();
+      const resetTime = new Date(now);
+      resetTime.setHours(23, 59, 0, 0);
+
+      let ms = resetTime - now;
+      if (ms <= 0) {
+        // 既に23:59を過ぎている場合は翌日の23:59
+        ms += 24 * 60 * 60 * 1000;
+      }
+
+      setTimeout(() => {
+        records = [];
+        startTimeStr = '';
+        actionInput.value = '';
+        clearState();
+        showScreen(startScreen);
+        renderRecords();
+        alert('23:59になりました。記録をリセットしました。');
+        scheduleReset(); // 次の日もスケジュール
+      }, ms);
+    }
+    scheduleReset();
+
+    // --- タブ復帰時にデータを再確認 ---
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        // 日付が変わっていたらリセット
+        const saved = loadState();
+        if (!saved && (records.length > 0 || startTimeStr)) {
+          records = [];
+          startTimeStr = '';
+          actionInput.value = '';
+          showScreen(startScreen);
+          renderRecords();
+        }
+      }
+    });
   </script>
 </body>
 </html>
